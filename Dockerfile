@@ -1,18 +1,14 @@
-FROM python:3.8-slim-buster AS builder
-
-WORKDIR /wheels
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir=/wheels -r requirements.txt
-
-FROM python:3.8-slim-buster
+FROM tensorflow/tensorflow:2.2.0-py3
 
 WORKDIR /app
-COPY --from=builder /wheels /wheels
-COPY . /app
+COPY requirements.txt .
 
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
-    && rm -rf /wheels
+# Install other dependencies (TensorFlow is already installed)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
 
 EXPOSE 8501
-ENTRYPOINT ["streamlit","run"]
+ENTRYPOINT ["streamlit", "run"]
 CMD ["app.py"]
