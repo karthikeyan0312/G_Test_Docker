@@ -1,18 +1,24 @@
-FROM python:3.8-slim-buster AS builder
+version: '3.8'
 
-WORKDIR /wheels
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir=/wheels -r requirements.txt
+services:
+  api:
+    build: .
+    container_name: my-python-app
+    ports:
+      - "0.0.0.0:8501:8501"
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - app-network
+    # Optional: Add resource limits to prevent container from using too much memory
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 1G
 
-FROM python:3.8-slim-buster
-
-WORKDIR /app
-COPY --from=builder /wheels /wheels
-COPY . /app
-
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
-    && rm -rf /wheels
-
-EXPOSE 8501
-ENTRYPOINT ["streamlit","run"]
-CMD ["app.py"]
+networks:
+  app-network:
+    driver: bridge
