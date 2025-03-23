@@ -1,10 +1,17 @@
-FROM tensorflow/tensorflow:2.2.0-py3
+FROM python:3.8-slim-buster AS builder
 
-COPY . /app
+WORKDIR /wheels
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --wheel-dir=/wheels -r requirements.txt
+
+FROM python:3.8-slim-buster
+
 WORKDIR /app
+COPY --from=builder /wheels /wheels
+COPY . /app
 
-# Install other dependencies (TensorFlow is already installed)
-RUN pip install streamlit opencv-python-headless numpy==1.19.2 Pillow validators requests
+RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
+    && rm -rf /wheels
 
 EXPOSE 8501
 ENTRYPOINT ["streamlit","run"]
