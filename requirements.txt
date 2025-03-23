@@ -1,7 +1,7 @@
 streamlit
-tensorflow-cpu
 opencv-python-headless
 numpy==1.19.2
 Pillow
 validators
 requests
+# tensorflow is removed as it's already included in the base image
